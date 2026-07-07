@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel — Günlük Araçlar</title>
+<meta name="description" content="Birim çevirme, VKİ, şifre üretme, yüzde ve yaş hesaplama gibi günlük araçlar tek panelde.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#E7E4DA;
+    --panel:#F4F2EA;
+    --ink:#1B241F;
+    --ink-soft:#4B5650;
+    --amber:#C98A2B;
+    --teal:#3E6259;
+    --rust:#A8452E;
+    --line: rgba(27,36,31,0.14);
+    --line-strong: rgba(27,36,31,0.35);
+    --radius: 3px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .display{font-family:'Space Grotesk',sans-serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  header.top{
+    border-bottom:2px solid var(--ink);
+    background:var(--paper);
+    padding:22px 28px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  header.top .brand{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:-0.02em;
+  }
+  header.top .brand span{color:var(--amber);}
+  header.top .tagline{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    letter-spacing:0.04em;
+  }
+
+  .ad-slot{
+    border:1px dashed var(--line-strong);
+    background:repeating-linear-gradient(135deg, rgba(27,36,31,0.03) 0 10px, transparent 10px 20px);
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-align:center;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .ad-slot.leaderboard{ height:90px; margin:0 auto; max-width:970px; }
+  .ad-slot.rect{ height:250px; }
+  .ad-wrap{ padding:18px 28px; }
+
+  .layout{
+    max-width:1180px;
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:220px 1fr 260px;
+    gap:0;
+    border-left:2px solid var(--ink);
+    border-right:2px solid var(--ink);
+    background:var(--panel);
+  }
+  @media (max-width:960px){
+    .layout{grid-template-columns:1fr;}
+    .side-right{display:none;}
+    nav.panel-nav{
+      display:flex;
+      overflow-x:auto;
+      border-right:none !important;
+      border-bottom:2px solid var(--ink);
+    }
+  }
+
+  nav.panel-nav{
+    border-right:2px solid var(--ink);
+    padding:18px 0;
+  }
+  nav.panel-nav .grp-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--ink-soft);
+    padding:6px 18px;
+  }
+  .tool-btn{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    width:100%;
+    text-align:left;
+    background:none;
+    border:none;
+    padding:11px 18px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:500;
+    color:var(--ink);
+    cursor:pointer;
+    border-left:3px solid transparent;
+    white-space:nowrap;
+  }
+  .tool-btn .dial{
+    width:9px;height:9px;border-radius:50%;
+    border:1.5px solid var(--ink-soft);
+    flex-shrink:0;
+  }
+  .tool-btn:hover{ background:rgba(27,36,31,0.05); }
+  .tool-btn.active{
+    border-left-color:var(--amber);
+    background:rgba(201,138,43,0.10);
+  }
+  .tool-btn.active .dial{
+    background:var(--amber);
+    border-color:var(--amber);
+  }
+
+  main.stage{ padding:32px; min-height:520px; }
+  .tool-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--line-strong);
+    padding-bottom:14px;
+    margin-bottom:26px;
+  }
+  .tool-header h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:26px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .tool-header .idx{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+
+  .field{ margin-bottom:18px; }
+  .field label{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .field input[type=text], .field input[type=number], .field select{
+    width:100%;
+    padding:10px 12px;
+    border:1.5px solid var(--line-strong);
+    border-radius:var(--radius);
+    background:var(--paper);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:15px;
+    color:var(--ink);
+  }
+  .field input:focus, .field select:focus{
+    outline:2px solid var(--amber);
+    outline-offset:1px;
+  }
+  .row{ display:flex; gap:14px; flex-wrap:wrap; }
+  .row .field{ flex:1; min-width:160px; }
+
+  .btn{
+    background:var(--ink);
+    color:var(--panel);
+    border:none;
+    padding:11px 20px;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    border-radius:var(--radius);
+    cursor:pointer;
+    letter-spacing:0.01em;
+  }
+  .btn:hover{ background:var(--teal); }
+  .btn.ghost{
+    background:none;
+    color:var(--ink);
+    border:1.5px solid var(--line-strong);
+  }
+  .btn.ghost:hover{ border-color:var(--ink); background:rgba(27,36,31,0.05); }
+
+  .result{
+    margin-top:22px;
+    border:1.5px solid var(--ink);
+    background:var(--paper);
+    border-radius:var(--radius);
+    padding:20px;
+  }
+  .result .big{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:34px;
+    font-weight:700;
+    color:var(--teal);
+  }
+  .result .label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .result .sub{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:6px;
+  }
+  .note{
+    font-size:13px;
+    color:var(--ink-soft);
+    line-height:1.5;
+    margin-top:24px;
+    border-top:1px solid var(--line);
+    padding-top:16px;
+  }
+
+  .side-right{
+    border-left:2px solid var(--ink);
+    padding:24px 20px;
+  }
+  .side-right .ad-slot.rect{ margin-bottom:22px; }
+  .side-right h3{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    margin:0 0 10px;
+  }
+  .side-right ul{ list-style:none; margin:0 0 26px; padding:0; }
+  .side-right li{
+    font-size:13.5px;
+    padding:8px 0;
+    border-bottom:1px solid var(--line);
+    cursor:pointer;
+  }
+  .side-right li:hover{ color:var(--teal); }
+
+  footer{
+    max-width:1180px;
+    margin:0 auto;
+    border:2px solid var(--ink);
+    border-top:none;
+    padding:20px 28px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .pw-out{
+    display:flex; gap:8px; align-items:center;
+    background:var(--paper);
+    border:1.5px solid var(--ink);
+    border-radius:var(--radius);
+    padding:14px 16px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:16px;
+    word-break:break-all;
+  }
+  .strength-bar{
+    height:6px; border-radius:3px; background:var(--line);
+    margin-top:10px; overflow:hidden;
+  }
+  .strength-fill{ height:100%; width:0%; background:var(--rust); transition:width .25s, background .25s; }
+  .checks label{
+    display:flex; align-items:center; gap:8px;
+    font-size:13.5px; margin-bottom:8px; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div>
+    <div class="brand">PANEL<span>.</span></div>
+    <div class="tagline">GÜNLÜK ARAÇLAR KONTROL PANELİ</div>
+  </div>
+  <div class="tagline" id="clock">--:--:--</div>
+</header>
+
+<div class="ad-wrap">
+  <!-- AdSense: buraya <ins class="adsbygoogle"> üst banner kodun gelecek -->
+  <div class="ad-slot leaderboard">Reklam Alanı — 728×90 (Üst Banner)</div>
+</div>
+
+<div class="layout">
+  <nav class="panel-nav" id="toolNav">
+    <div class="grp-label">Hesaplama</div>
+    <button class="tool-btn active" data-tool="birim"><span class="dial"></span>Birim Çevirici</button>
+    <button class="tool-btn" data-tool="yuzde"><span class="dial"></span>Yüzde Hesaplama</button>
+    <button class="tool-btn" data-tool="vki"><span class="dial"></span>VKİ (BMI) Hesabı</button>
+    <button class="tool-btn" data-tool="yas"><span class="dial"></span>Yaş Hesaplama</button>
+    <div class="grp-label">Üretici</div>
+    <button class="tool-btn" data-tool="sifre"><span class="dial"></span>Şifre Üretici</button>
+  </nav>
+
+  <main class="stage" id="stage">
+    <!-- JS ile dolduruluyor -->
+  </main>
+
+  <aside class="side-right">
+    <div class="ad-slot rect">Reklam Alanı<br>300×250</div>
+    <h3>Neden bu araçlar</h3>
+    <ul>
+      <li>Kayıt yok, anında sonuç</li>
+      <li>Tüm hesaplama tarayıcında yapılır</li>
+      <li>Verilerin hiçbir yere gönderilmez</li>
+    </ul>
+    <div class="ad-slot rect">Reklam Alanı<br>300×250</div>
+  </aside>
+</div>
+
+<footer>
+  <span>© 2026 Panel — Günlük Araçlar</span>
+  <span>Tüm hesaplamalar cihazında yapılır, sunucuya veri gönderilmez.</span>
+</footer>
+
+<script>
+function tickClock(){
+  const el = document.getElementById('clock');
+  const d = new Date();
+  el.textContent = d.toLocaleTimeString('tr-TR');
+}
+setInterval(tickClock, 1000); tickClock();
+
+const stage = document.getElementById('stage');
+const navBtns = document.querySelectorAll('.tool-btn');
+
+const templates = {
+  birim: `
+    <div class="tool-header"><h1>Birim Çevirici</h1><span class="idx">01 / UZUNLUK</span></div>
+    <div class="row">
+      <div class="field">
+        <label>Değer</label>
+        <input type="number" id="b-val" value="1" step="any">
+      </div>
+      <div class="field">
+        <label>Birim</label>
+        <select id="b-from">
+          <option value="m">Metre (m)</option>
+          <option value="km">Kilometre (km)</option>
+          <option value="cm">Santimetre (cm)</option>
+          <option value="mile">Mil</option>
+          <option value="ft">Feet</option>
+          <option value="inch">İnç</option>
+        </select>
+      </div>
+    </div>
+    <div class="result">
+      <div class="label">Sonuçlar</div>
+      <div id="b-out"></div>
+    </div>
+    <div class="note">Metre baz alınarak tüm birimler otomatik hesaplanır. Uzunluk dışında ağırlık/sıcaklık çevirici eklemek istersen kolayca genişletilebilir.</div>
+  `,
+  yuzde: `
+    <div class="tool-header"><h1>Yüzde Hesaplama</h1><span class="idx">02 / ORAN</span></div>
+    <div class="row">
+      <div class="field"><label>Sayı</label><input type="number" id="p-num" value="200"></div>
+      <div class="field"><label>Yüzde (%)</label><input type="number" id="p-pct" value="15"></div>
+    </div>
+    <div class="result">
+      <div class="label">X'in Y%'si</div>
+      <div class="big" id="p-out1">—</div>
+    </div>
+    <div class="row" style="margin-top:20px">
+      <div class="field"><label>Eski Değer</label><input type="number" id="p-old" value="80"></div>
+      <div class="field"><label>Yeni Değer</label><input type="number" id="p-new" value="100"></div>
+    </div>
+    <div class="result">
+      <div class="label">Değişim Yüzdesi</div>
+      <div class="big" id="p-out2">—</div>
+    </div>
+  `,
+  vki: `
+    <div class="tool-header"><h1>VKİ (Vücut Kitle İndeksi)</h1><span class="idx">03 / SAĞLIK</span></div>
+    <div class="row">
+      <div class="field"><label>Boy (cm)</label><input type="number" id="v-h" value="170"></div>
+      <div class="field"><label>Kilo (kg)</label><input type="number" id="v-w" value="70"></div>
+    </div>
+    <div class="result">
+      <div class="label">VKİ Değeriniz</div>
+      <div class="big" id="v-out">—</div>
+      <div class="sub" id="v-cat"></div>
+    </div>
+    <div class="note">VKİ genel bir gösterge sunar; kas kütlesi yüksek kişilerde yanıltıcı olabilir. Sağlık kararları için bir uzmana danışmalısın — bu araç tıbbi tavsiye yerine geçmez.</div>
+  `,
+  yas: `
+    <div class="tool-header"><h1>Yaş Hesaplama</h1><span class="idx">04 / TARİH</span></div>
+    <div class="field" style="max-width:260px">
+      <label>Doğum Tarihi</label>
+      <input type="text" id="y-date" placeholder="GG.AA.YYYY" value="01.01.2000">
+    </div>
+    <button class="btn" id="y-calc">Hesapla</button>
+    <div class="result" style="margin-top:20px">
+      <div class="label">Yaşınız</div>
+      <div class="big" id="y-out">—</div>
+      <div class="sub" id="y-days"></div>
+    </div>
+  `,
+  sifre: `
+    <div class="tool-header"><h1>Şifre Üretici</h1><span class="idx">05 / GÜVENLİK</span></div>
+    <div class="field">
+      <label>Uzunluk: <span id="s-len-val">16</span></label>
+      <input type="range" id="s-len" min="6" max="48" value="16" style="width:100%">
+    </div>
+    <div class="checks">
+      <label><input type="checkbox" id="s-upper" checked> Büyük harf (A-Z)</label>
+      <label><input type="checkbox" id="s-lower" checked> Küçük harf (a-z)</label>
+      <label><input type="checkbox" id="s-num" checked> Rakam (0-9)</label>
+      <label><input type="checkbox" id="s-sym" checked> Sembol (!@#$)</label>
+    </div>
+    <button class="btn" id="s-gen" style="margin-top:6px">Şifre Üret</button>
+    <div class="result" style="margin-top:20px">
+      <div class="label">Üretilen Şifre</div>
+      <div class="pw-out" id="s-out">—</div>
+      <div class="strength-bar"><div class="strength-fill" id="s-bar"></div></div>
+      <div class="sub" id="s-strength-label"></div>
+    </div>
+    <div class="note">Şifreler tamamen tarayıcında, senin cihazında üretilir; hiçbir yere gönderilmez veya kaydedilmez.</div>
+  `
+};
+
+function loadTool(name){
+  stage.innerHTML = templates[name];
+  navBtns.forEach(b => b.classList.toggle('active', b.dataset.tool === name));
+  if(name === 'birim') initBirim();
+  if(name === 'yuzde') initYuzde();
+  if(name === 'vki') initVki();
+  if(name === 'yas') initYas();
+  if(name === 'sifre') initSifre();
+}
+
+navBtns.forEach(btn => btn.addEventListener('click', () => loadTool(btn.dataset.tool)));
+
+// --- Birim Çevirici ---
+function initBirim(){
+  const toMeter = { m:1, km:1000, cm:0.01, mile:1609.344, ft:0.3048, inch:0.0254 };
+  const labels = { m:'Metre', km:'Kilometre', cm:'Santimetre', mile:'Mil', ft:'Feet', inch:'İnç' };
+  function update(){
+    const val = parseFloat(document.getElementById('b-val').value) || 0;
+    const from = document.getElementById('b-from').value;
+    const meters = val * toMeter[from];
+    let html = '';
+    Object.keys(toMeter).forEach(u => {
+      if(u === from) return;
+      const converted = meters / toMeter[u];
+      html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:14px;">
+        <span style="color:var(--ink-soft)">${labels[u]}</span><span>${converted.toLocaleString('tr-TR',{maximumFractionDigits:4})}</span></div>`;
+    });
+    document.getElementById('b-out').innerHTML = html;
+  }
+  document.getElementById('b-val').addEventListener('input', update);
+  document.getElementById('b-from').addEventListener('change', update);
+  update();
+}
+
+// --- Yüzde ---
+function initYuzde(){
+  function update(){
+    const num = parseFloat(document.getElementById('p-num').value) || 0;
+    const pct = parseFloat(document.getElementById('p-pct').value) || 0;
+    document.getElementById('p-out1').textContent = (num * pct / 100).toLocaleString('tr-TR',{maximumFractionDigits:2});
+    const oldV = parseFloat(document.getElementById('p-old').value) || 0;
+    const newV = parseFloat(document.getElementById('p-new').value) || 0;
+    const change = oldV !== 0 ? ((newV - oldV) / oldV * 100) : 0;
+    const out2 = document.getElementById('p-out2');
+    out2.textContent = (change >= 0 ? '+' : '') + change.toLocaleString('tr-TR',{maximumFractionDigits:2}) + '%';
+    out2.style.color = change >= 0 ? 'var(--teal)' : 'var(--rust)';
+  }
+  ['p-num','p-pct','p-old','p-new'].forEach(id => document.getElementById(id).addEventListener('input', update));
+  update();
+}
+
+// --- VKİ ---
+function initVki(){
+  function update(){
+    const h = (parseFloat(document.getElementById('v-h').value) || 0) / 100;
+    const w = parseFloat(document.getElementById('v-w').value) || 0;
+    if(h <= 0){ document.getElementById('v-out').textContent = '—'; return; }
+    const bmi = w / (h*h);
+    document.getElementById('v-out').textContent = bmi.toLocaleString('tr-TR',{maximumFractionDigits:1});
+    let cat = '';
+    if(bmi < 18.5) cat = 'Zayıf aralık';
+    else if(bmi < 25) cat = 'Normal aralık';
+    else if(bmi < 30) cat = 'Kilolu aralık';
+    else cat = 'Obez aralık';
+    document.getElementById('v-cat').textContent = cat + ' (WHO sınıflandırması)';
+  }
+  document.getElementById('v-h').addEventListener('input', update);
+  document.getElementById('v-w').addEventListener('input', update);
+  update();
+}
+
+// --- Yaş ---
+function initYas(){
+  function calc(){
+    const raw = document.getElementById('y-date').value.trim();
+    const parts = raw.split('.');
+    if(parts.length !== 3){ document.getElementById('y-out').textContent = 'Tarihi GG.AA.YYYY biçiminde gir'; return; }
+    const [d,m,y] = parts.map(Number);
+    const birth = new Date(y, m-1, d);
+    const now = new Date();
+    if(isNaN(birth.getTime()) || birth > now){ document.getElementById('y-out').textContent = 'Geçersiz tarih'; return; }
+    let years = now.getFullYear() - birth.getFullYear();
+    let months = now.getMonth() - birth.getMonth();
+    let days = now.getDate() - birth.getDate();
+    if(days < 0){ months -= 1; days += new Date(now.getFullYear(), now.getMonth(), 0).getDate(); }
+    if(months < 0){ years -= 1; months += 12; }
+    document.getElementById('y-out').textContent = `${years} yıl ${months} ay ${days} gün`;
+    const totalDays = Math.floor((now - birth) / (1000*60*60*24));
+    document.getElementById('y-days').textContent = `Toplam ${totalDays.toLocaleString('tr-TR')} gün yaşadın`;
+  }
+  document.getElementById('y-calc').addEventListener('click', calc);
+  calc();
+}
+
+// --- Şifre ---
+function initSifre(){
+  const lenInput = document.getElementById('s-len');
+  const lenVal = document.getElementById('s-len-val');
+  lenInput.addEventListener('input', () => lenVal.textContent = lenInput.value);
+
+  function generate(){
+    const len = parseInt(lenInput.value, 10);
+    const useUpper = document.getElementById('s-upper').checked;
+    const useLower = document.getElementById('s-lower').checked;
+    const useNum = document.getElementById('s-num').checked;
+    const useSym = document.getElementById('s-sym').checked;
+    const sets = [];
+    if(useUpper) sets.push('ABCDEFGHJKLMNPQRSTUVWXYZ');
+    if(useLower) sets.push('abcdefghijkmnpqrstuvwxyz');
+    if(useNum) sets.push('23456789');
+    if(useSym) sets.push('!@#$%^&*_-+=?');
+    if(sets.length === 0){ document.getElementById('s-out').textContent = 'En az bir seçenek işaretle'; return; }
+    const all = sets.join('');
+    const arr = new Uint32Array(len);
+    crypto.getRandomValues(arr);
+    let pass = '';
+    for(let i=0; i<len; i++){ pass += all[arr[i] % all.length]; }
+    document.getElementById('s-out').textContent = pass;
+
+    let score = 0;
+    if(sets.length >= 3) score += 40;
+    if(sets.length === 4) score += 20;
+    score += Math.min(40, len * 1.2);
+    score = Math.min(100, score);
+    const bar = document.getElementById('s-bar');
+    bar.style.width = score + '%';
+    let label = 'Zayıf'; let color = 'var(--rust)';
+    if(score > 70){ label = 'Güçlü'; color = 'var(--teal)'; }
+    else if(score > 45){ label = 'Orta'; color = 'var(--amber)'; }
+    bar.style.background = color;
+    document.getElementById('s-strength-label').textContent = 'Tahmini güç: ' + label;
+  }
+  document.getElementById('s-gen').addEventListener('click', generate);
+  generate();
+}
+
+// İlk yükleme
+loadTool('birim');
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
